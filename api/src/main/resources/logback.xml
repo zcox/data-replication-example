@@ -9,6 +9,9 @@
     </encoder>
   </appender>
 
+  <logger name="org.apache.zookeeper" level="ERROR"/>
+  <logger name="kafka" level="INFO"/>
+
   <root level="DEBUG">
     <appender-ref ref="stdout"/>
   </root>
