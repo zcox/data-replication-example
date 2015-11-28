@@ -2,15 +2,21 @@ package com.banno
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global //TODO DB operations should be performed on their own ExecutionContext
+import org.apache.avro.generic.GenericData
 
-trait UserRepository extends Database {
-  def getUser(userId: Long): Future[User] = getUserFromDatabase(userId)
+trait UserRepository extends Database with KafkaAvroSerdes 
+{
+  def getUser(userId: Long): Future[User] = getUserFromRocksDb(userId)
 
   def getUserFromDatabase(userId: Long): Future[User] = Future {
     query(s"SELECT * FROM users WHERE id=$userId") { results => 
       if (!results.next()) throw new IllegalArgumentException(s"User $userId does not exist") //TODO better fail here so GET /api/users/123 returns 404
       User(results.getLong("id"), results.getString("username"), results.getString("name"), results.getString("description"), results.getString("image_url"))
     }
+  }
+
+  def getUserFromRocksDb(userId: Long): Future[User] = Future {
+    Option(RocksDbFactory.usersRocksDb.get(usersKeyBytes(userId))).map(userFrom) getOrElse (throw new NullPointerException("No user in RocksDB for $userId"))
   }
 
   def userExists(userId: Long): Boolean = 

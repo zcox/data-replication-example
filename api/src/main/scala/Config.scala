@@ -16,3 +16,12 @@ trait DatabaseConfig extends Config {
   lazy val databaseUsername = config.getString("api.database.username")
   lazy val databasePassword = config.getString("api.database.password")
 }
+
+trait KafkaConfig extends Config {
+  lazy val zookeeperConnect = config.getString("api.zookeeper.connect")
+  lazy val schemaRegistryHost = config.getString("api.schema-registry.host")
+  lazy val schemaRegistryPort = config.getInt("api.schema-registry.port")
+  lazy val schemaRegistryUrl = s"http://$schemaRegistryHost:$schemaRegistryPort"
+  lazy val usersTopic = config.getString("api.kafka.users-topic")
+  lazy val tweetsTopic = config.getString("api.kafka.tweets-topic")
+}

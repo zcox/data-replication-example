@@ -9,8 +9,8 @@ kafka:
     - "9092:9092"
   links: 
     - zookeeper:zk
-  volumes:
-    - /mnt/sda1/kafka:/kafka
+  # volumes:
+  #   - /mnt/sda1/kafka:/kafka
   environment:
     KAFKA_BROKER_ID: 1
     KAFKA_ADVERTISED_HOST_NAME: 192.168.59.103
