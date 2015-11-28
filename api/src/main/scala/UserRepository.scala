@@ -15,8 +15,11 @@ trait UserRepository extends Database with KafkaAvroSerdes
     }
   }
 
+  lazy val usersDb = RocksDbFactory.usersRocksDb
+  lazy val serde = UserRocksDbSerde
+
   def getUserFromRocksDb(userId: Long): Future[User] = Future {
-    Option(RocksDbFactory.usersRocksDb.get(usersKeyBytes(userId))).map(userFrom) getOrElse (throw new NullPointerException("No user in RocksDB for $userId"))
+    Option(usersDb.get(serde.keyToBytes(userId))).map(serde.valueFromBytes).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
   }
 
   def userExists(userId: Long): Boolean = 
