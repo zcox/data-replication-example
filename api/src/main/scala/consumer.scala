@@ -4,7 +4,8 @@ import java.util.Properties
 import io.confluent.kafka.serializers.KafkaAvroDecoder
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector, KafkaStream}
 import kafka.utils.VerifiableProperties
-import org.apache.avro.generic.IndexedRecord
+import org.apache.avro.generic.GenericRecord
+import org.rocksdb.{RocksDB, Options, BlockBasedTableConfig, CompressionType, CompactionStyle}
 
 trait ReplicateIntoRocksDb extends Config {
   lazy val zookeeperConnect = config.getString("api.zookeeper.connect")
@@ -12,6 +13,34 @@ trait ReplicateIntoRocksDb extends Config {
   lazy val schemaRegistryPort = config.getInt("api.schema-registry.port")
   lazy val usersTopic = config.getString("api.kafka.users-topic")
   lazy val tweetsTopic = config.getString("api.kafka.tweets-topic")
+  lazy val rocksdbBlockSize = config.getLong("api.rocksdb.block-size")
+  lazy val rocksdbBlockCacheSize = config.getLong("api.rocksdb.block-cache-size")
+  lazy val usersRocksDbPath = config.getString("api.rocksdb.users-db-path")
+  lazy val tweetsRocksDbPath = config.getString("api.rocksdb.tweets-db-path")
+
+  def rocksDbFor(dbPath: String): RocksDB = {
+    //TODO mkdir if needed
+    val opts = new Options()
+    opts.setCompressionType(CompressionType.SNAPPY_COMPRESSION)
+    opts.setCompactionStyle(CompactionStyle.UNIVERSAL)
+    opts.setMaxWriteBufferNumber(3)
+    opts.setCreateIfMissing(true)
+
+    val tableOpts = new BlockBasedTableConfig()
+    tableOpts.setBlockSize(rocksdbBlockSize)
+    tableOpts.setBlockCacheSize(rocksdbBlockCacheSize)
+
+    opts.setTableFormatConfig(tableOpts)
+
+    val db = RocksDB.open(opts, dbPath)
+
+    sys.addShutdownHook {
+      db.close()
+      opts.dispose()
+    }
+
+    db
+  }
 
   def startReplication(): Unit = {
     val props = new Properties()
@@ -22,13 +51,9 @@ trait ReplicateIntoRocksDb extends Config {
     props.put("offsets.storage", "kafka")
     props.put("schema.registry.url", s"http://$schemaRegistryHost:$schemaRegistryPort")
 
-    val vProps = new VerifiableProperties(props)
-    val keyDecoder = new KafkaAvroDecoder(vProps)
-    val valueDecoder = new KafkaAvroDecoder(vProps)
-
-    val consumerConnector = Consumer.create(new ConsumerConfig(vProps.props)) //TODO use props here?
-    val streams = consumerConnector.createMessageStreams(Map(usersTopic -> 1, tweetsTopic -> 1), keyDecoder, valueDecoder)
-    new Thread(new RocksDbUpdater(usersTopic, streams(usersTopic)(0))).start()
+    val consumerConnector = Consumer.create(new ConsumerConfig(props))
+    val streams = consumerConnector.createMessageStreams(Map(usersTopic -> 1, tweetsTopic -> 1))
+    new Thread(new RocksDbUpdater(usersTopic, streams(usersTopic)(0), rocksDbFor(usersRocksDbPath))).start()
 
     sys.addShutdownHook {
       consumerConnector.shutdown()
@@ -36,13 +61,15 @@ trait ReplicateIntoRocksDb extends Config {
   }
 }
 
-class RocksDbUpdater(topic: String, stream: KafkaStream[Object, Object]) extends Runnable with Logging {
+class RocksDbUpdater(topic: String, stream: KafkaStream[Array[Byte], Array[Byte]], db: RocksDB) extends Runnable with Logging {
   override def run(): Unit = {
     log.debug(s"Consuming from $topic...")
     stream foreach { messageAndMetadata => 
       val key = messageAndMetadata.key
       val message = messageAndMetadata.message
-      log.debug(s"Received from topic $topic: key = $key, message = $message")
+      if (message != null) db.put(key, message)
+      else db.remove(key)
+      //TODO timer
     }
     log.debug(s"Done consuming from $topic")
   }
