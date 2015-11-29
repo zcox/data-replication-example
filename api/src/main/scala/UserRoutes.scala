@@ -2,9 +2,7 @@ package com.banno
 
 import akka.http.scaladsl.server.Directives._
 
-trait UserRoutes 
-    extends UserRepository 
-    with JsonSupport {
+trait UserRoutes extends UserRepository with JsonSupport {
 
   val userRoute = path(LongNumber) { userId => 
     get { 

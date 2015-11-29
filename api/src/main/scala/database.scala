@@ -26,6 +26,12 @@ trait Database extends DatabaseConfig {
 
   def query[A](sql: String)(process: ResultSet => A): A = query(newConnection(), sql)(process)
 
+  def queryOne[A](sql: String)(process: ResultSet => A): A = 
+    query(sql) { results => 
+      results.next()
+      process(results)
+    }
+
   def update(connection: Connection, sql: String): Int = 
     using(connection) { connection => 
       using(connection.prepareStatement(sql)) { statement => 

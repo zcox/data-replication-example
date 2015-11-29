@@ -28,10 +28,16 @@ final case class Tweet(
   latitude: Option[Double],
   longitude: Option[Double])
 
+final case class NewTweet(
+  text: String,
+  userId: Long,
+  latitude: Option[Double],
+  longitude: Option[Double])
+
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit object DateTimeFormat extends JsonFormat[DateTime] {
-    val formatter = ISODateTimeFormat.basicDateTimeNoMillis
+    val formatter = ISODateTimeFormat.dateTime
     def write(time: DateTime): JsValue = JsString(formatter.print(time))
     def read(json: JsValue): DateTime = json match {
       case JsString(s) => formatter.parseDateTime(s)
@@ -42,4 +48,5 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val userFormat = jsonFormat5(User)
   implicit val newUserFormat = jsonFormat4(NewUser)
   implicit val tweetFormat = jsonFormat6(Tweet)
+  implicit val newTweetFormat = jsonFormat4(NewTweet)
 }

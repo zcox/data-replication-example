@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Directives._
 
 trait HttpServer
     extends UserRoutes 
+    with TweetRoutes
     with ApiConfig 
     with Logging {
 
@@ -15,7 +16,7 @@ trait HttpServer
   import system.dispatcher
   implicit val materializer = ActorMaterializer()
 
-  val apiRoute = pathPrefix("api") { usersRoute }
+  val apiRoute = pathPrefix("api") { usersRoute ~ tweetsRoute }
 
   val pingRoute = path("ping") { get { complete { "pong" } } }
 
