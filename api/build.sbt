@@ -10,6 +10,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= {
   val akkaHttpVersion = "2.0-M1"
+  val metricsVersion = "3.1.2"
   Seq(
     "com.typesafe" % "config" % "1.3.0",
     "com.typesafe.akka" %% "akka-http-experimental" % akkaHttpVersion,
@@ -21,6 +22,9 @@ libraryDependencies ++= {
     "io.confluent" % "kafka-avro-serializer" % "1.0.1" exclude("log4j", "log4j") exclude("org.slf4j", "slf4j-log4j12"),
     "org.apache.kafka" %% "kafka" % "0.8.2.0-cp" exclude("log4j", "log4j") exclude("org.slf4j", "slf4j-log4j12"), //why is there no 0.8.2.1-cp?
     "org.scala-lang.modules" %% "scala-pickling" % "0.10.1",
+    "io.dropwizard.metrics" % "metrics-core" % metricsVersion,
+    "io.dropwizard.metrics" % "metrics-graphite" % metricsVersion,
+    "nl.grons" %% "metrics-scala" % "3.5.2",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "org.slf4j" % "log4j-over-slf4j" % "1.7.13"
   )

@@ -4,7 +4,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global //TODO DB operations should be performed on their own ExecutionContext
 import org.apache.avro.generic.GenericData
 
-trait UserRepository extends Database with KafkaAvroSerdes 
+trait UserRepository extends Database with KafkaAvroSerdes with Instrumented
 {
   def getUser(userId: Long): Future[User] = getUserFromRocksDb(userId)
 
@@ -17,9 +17,12 @@ trait UserRepository extends Database with KafkaAvroSerdes
 
   lazy val usersDb = RocksDbFactory.usersRocksDb
   lazy val serde = UserRocksDbSerde
+  lazy val timer = metrics.timer(s"rocksdb-reads-$usersTopic")
 
   def getUserFromRocksDb(userId: Long): Future[User] = Future {
-    Option(usersDb.get(serde.keyToBytes(userId))).map(serde.valueFromBytes).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
+    timer.time {
+      Option(usersDb.get(serde.keyToBytes(userId))).map(serde.valueFromBytes).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
+    }
   }
 
   def userExists(userId: Long): Boolean = 

@@ -46,3 +46,9 @@ elasticsearch:
     - "9200:9200"
     - "9300:9300"
   command: -Des.network.host=0.0.0.0 #otherwise it binds to 127.0.0.1 and isn't accessible outside boot2docker
+
+grafana:
+  image: cazcade/docker-grafana-graphite:latest
+  ports:
+    - "8123:80"
+    - "2003:2003"

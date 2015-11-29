@@ -1,6 +1,6 @@
 #!/bin/bash
 
-doc up -d kafka postgres elasticsearch
+doc up -d kafka postgres elasticsearch grafana
 
 echo "Waiting for data stores to start..."
 sleep 5
