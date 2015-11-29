@@ -24,7 +24,11 @@ trait ReplicateIntoRocksDb extends KafkaConfig {
 
     val consumerConnector = Consumer.create(new ConsumerConfig(props))
     val streams = consumerConnector.createMessageStreams(Map(usersTopic -> 1, tweetsTopic -> 1), keyDecoder, valueDecoder)
-    new Thread(new RocksDbUpdater(usersTopic, streams(usersTopic)(0), RocksDbFactory.usersRocksDb)(UserKafkaAvroSerde)).start()
+
+    val usersStream = streams(usersTopic)(0)
+    val usersHandler = new ReplicateDatabaseRowsIntoRocksDb(RocksDbFactory.usersRocksDb)
+    val usersConsumer = new DatabaseChangeConsumer(usersTopic, usersStream, usersHandler)(UserKafkaAvroSerde)
+    new Thread(usersConsumer).start()
 
     sys.addShutdownHook {
       consumerConnector.shutdown()
@@ -32,25 +36,28 @@ trait ReplicateIntoRocksDb extends KafkaConfig {
   }
 }
 
-class RocksDbUpdater[K, V]
-  (topic: String, stream: KafkaStream[Object, Object], db: TypedRocksDB[K, V])
-  (implicit kafkaAvroSerde: KafkaAvroSerde[K, V]) extends Runnable with Logging with Instrumented {
+trait DatabaseChangeHandler[K, V] {
+  def rowChanged(key: K, value: V): Unit
+  def rowDeleted(key: K): Unit
+}
 
-  val timer = metrics.timer(s"rocksdb-writes-$topic")
+class ReplicateDatabaseRowsIntoRocksDb[K, V](db: TypedRocksDB[K, V]) extends DatabaseChangeHandler[K, V] {
+  override def rowChanged(key: K, value: V): Unit = db.put(key, value)
+  override def rowDeleted(key: K): Unit = db.remove(key)
+}
+
+class DatabaseChangeConsumer[K, V]
+    (topic: String, stream: KafkaStream[Object, Object], handler: DatabaseChangeHandler[K, V])
+    (implicit serde: KafkaAvroSerde[K, V])
+  extends Runnable with Logging {
 
   override def run(): Unit = {
     log.debug(s"Consuming from $topic...")
     stream foreach { messageAndMetadata => 
-      val key = kafkaAvroSerde.keyFromRecord(messageAndMetadata.key.asInstanceOf[GenericRecord])
+      val key = serde.keyFromRecord(messageAndMetadata.key.asInstanceOf[GenericRecord])
       val message = messageAndMetadata.message
-      timer.time {
-        if (message == null) {
-          db.remove(key)
-        } else {
-          val value = kafkaAvroSerde.valueFromRecord(message.asInstanceOf[GenericRecord])
-          db.put(key, value)
-        }
-      }
+      if (message == null) handler.rowDeleted(key)
+      else handler.rowChanged(key, serde.valueFromRecord(message.asInstanceOf[GenericRecord]))
     }
     log.debug(s"Done consuming from $topic")
   }
