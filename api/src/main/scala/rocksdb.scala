@@ -2,13 +2,19 @@ package com.banno
 
 import org.rocksdb.{RocksDB, Options, BlockBasedTableConfig, CompressionType, CompactionStyle}
 
+class TypedRocksDB[K, V](db: RocksDB)(implicit serde: RocksDbSerde[K, V]) {
+  def get(key: K): Option[V] = Option(db.get(serde.keyToBytes(key))).map(serde.valueFromBytes)
+  def put(key: K, value: V): Unit = db.put(serde.keyToBytes(key), serde.valueToBytes(value))
+  def remove(key: K): Unit = db.remove(serde.keyToBytes(key))
+}
+
 object RocksDbFactory extends Config {
   lazy val rocksdbBlockSize = config.getLong("api.rocksdb.block-size")
   lazy val rocksdbBlockCacheSize = config.getLong("api.rocksdb.block-cache-size")
   lazy val usersRocksDbPath = config.getString("api.rocksdb.users-db-path")
   lazy val tweetsRocksDbPath = config.getString("api.rocksdb.tweets-db-path")
 
-  def rocksDbFor(dbPath: String): RocksDB = {
+  def rocksDbFor[K, V](dbPath: String)(implicit serde: RocksDbSerde[K, V]): TypedRocksDB[K, V] = {
     //TODO mkdir if needed
     val opts = new Options()
     opts.setCompressionType(CompressionType.SNAPPY_COMPRESSION)
@@ -29,9 +35,9 @@ object RocksDbFactory extends Config {
       opts.dispose()
     }
 
-    db
+    new TypedRocksDB(db)
   }
 
-  lazy val usersRocksDb = rocksDbFor(usersRocksDbPath)
-  lazy val tweetsRocksDb = rocksDbFor(tweetsRocksDbPath)
+  lazy val usersRocksDb = rocksDbFor(usersRocksDbPath)(UserRocksDbSerde)
+  // lazy val tweetsRocksDb = rocksDbFor(tweetsRocksDbPath)
 }

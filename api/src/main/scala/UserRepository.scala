@@ -16,12 +16,11 @@ trait UserRepository extends Database with KafkaAvroSerdes with Instrumented
   }
 
   lazy val usersDb = RocksDbFactory.usersRocksDb
-  lazy val serde = UserRocksDbSerde
   lazy val timer = metrics.timer(s"rocksdb-reads-$usersTopic")
 
   def getUserFromRocksDb(userId: Long): Future[User] = Future {
     timer.time {
-      Option(usersDb.get(serde.keyToBytes(userId))).map(serde.valueFromBytes).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
+      usersDb.get(userId).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
     }
   }
 
