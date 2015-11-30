@@ -15,17 +15,14 @@ object RecentTweets extends Config {
 
 object TweetKafkaAvroSerde extends KafkaAvroSerde[Long, Tweet] {
   override def keyFromRecord(record: GenericRecord): Long = record.get("id").asInstanceOf[Long]
-  override def valueFromRecord(record: GenericRecord): Tweet = {
-    val t = Tweet(
+  override def valueFromRecord(record: GenericRecord): Tweet = 
+    Tweet(
       record.get("id").asInstanceOf[Long],
       record.get("content").toString,
       record.get("user_id").asInstanceOf[Long],
       toDateTime(record.get("created_at").asInstanceOf[GenericRecord]),
       Option(record.get("latitude")).map(_.asInstanceOf[Double]),
       Option(record.get("longitude")).map(_.asInstanceOf[Double]))
-    println("createdAt = " + t.createdAt)
-    t
-  }
 
   //class = org.apache.avro.generic.GenericData$Record, toString = {"year": 2015, "month": 11, "day": 29, "hour": 20, "minute": 5, "second": 4, "micro": 812000}
   def toDateTime(record: GenericRecord): DateTime = new DateTime(
@@ -38,7 +35,6 @@ object TweetKafkaAvroSerde extends KafkaAvroSerde[Long, Tweet] {
     record.get("micro").asInstanceOf[Int] / 1000).withZone(DateTimeZone.UTC)
 }
 
-/** userId: Long -> recentTweets: List[Tweet]. List seems to be the only ordered-list-like data structure that scala-pickling can actually serialize. */
 object RecentTweetsRocksDbSerde extends RocksDbSerde[Long, List[Tweet]] {
 
   override def keyToBytes(userId: Long): Array[Byte] = userId.pickle.value

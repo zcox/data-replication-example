@@ -2,10 +2,22 @@ package com.banno
 
 import org.rocksdb.{RocksDB, Options, BlockBasedTableConfig, CompressionType, CompactionStyle}
 
-class TypedRocksDB[K, V](db: RocksDB)(implicit serde: RocksDbSerde[K, V]) {
-  def get(key: K): Option[V] = Option(db.get(serde.keyToBytes(key))).map(serde.valueFromBytes)
-  def put(key: K, value: V): Unit = db.put(serde.keyToBytes(key), serde.valueToBytes(value))
-  def remove(key: K): Unit = db.remove(serde.keyToBytes(key))
+class TypedRocksDB[K, V](db: RocksDB, timerName: String)(implicit serde: RocksDbSerde[K, V]) extends Instrumented {
+
+  lazy val getTimer = metrics.timer(s"$timerName.get")
+  def get(key: K): Option[V] = getTimer.time { 
+    Option(db.get(serde.keyToBytes(key))).map(serde.valueFromBytes)
+  }
+
+  lazy val putTimer = metrics.timer(s"$timerName.put")
+  def put(key: K, value: V): Unit = putTimer.time { 
+    db.put(serde.keyToBytes(key), serde.valueToBytes(value))
+  }
+
+  lazy val removeTimer = metrics.timer(s"$timerName.remove")
+  def remove(key: K): Unit = removeTimer.time { 
+    db.remove(serde.keyToBytes(key))
+  }
 }
 
 object RocksDbFactory extends Config {
@@ -34,7 +46,12 @@ object RocksDbFactory extends Config {
       opts.dispose()
     }
 
-    new TypedRocksDB(db)
+    new TypedRocksDB(db, timerName(dbPath))
+  }
+
+  def timerName(dbPath: String): String = {
+    val i = dbPath.lastIndexOf('/')
+    if (i >= 0) dbPath.substring(i) else dbPath
   }
 
   lazy val usersRocksDb = rocksDbFor(usersRocksDbPath)(UserRocksDbSerde)
