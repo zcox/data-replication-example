@@ -1,7 +1,8 @@
 package com.banno
 
-object Main extends App with HttpServer with ReplicateIntoRocksDb {
+object Main extends App with HttpServer with ReplicateIntoRocksDb with ReplicateIntoElasticsearch {
   startHttpServer()
-  startReplication()
+  startRocksDbReplication()
+  startElasticsearchReplication()
   Metrics.reportToGraphite()
 }

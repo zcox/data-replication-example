@@ -1,0 +1,13 @@
+curl '192.168.59.103:9200/twitter/_search?q=cats&pretty'
+
+curl '192.168.59.103:9200/twitter/_search?pretty=true' -d '
+{
+  "query": {
+    "match": {
+      "_all": "tweet"
+    }
+  }
+}
+'
+
+curl -XPOST -H "Content-Type: application/json" localhost:8181/api/tweets -d '{"text": "I like birds", "userId": 1}'

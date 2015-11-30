@@ -11,6 +11,8 @@
 
   <logger name="org.apache.zookeeper" level="ERROR"/>
   <logger name="kafka" level="INFO"/>
+  <logger name="org.elasticsearch" level="INFO"/>
+  <logger name="akka" level="INFO"/>
 
   <root level="DEBUG">
     <appender-ref ref="stdout"/>

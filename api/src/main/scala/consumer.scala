@@ -7,12 +7,12 @@ import kafka.utils.VerifiableProperties
 import org.apache.avro.generic.GenericRecord
 import org.rocksdb.{RocksDB, Options, BlockBasedTableConfig, CompressionType, CompactionStyle}
 
-trait ReplicateIntoRocksDb extends KafkaConfig {
-
-  def startReplication(): Unit = {
+trait KafkaConsumer extends KafkaConfig {
+  
+  def getStreams(groupId: String): Map[String, List[KafkaStream[Object, Object]]] = {
     val props = new Properties()
     props.put("zookeeper.connect", zookeeperConnect)
-    props.put("group.id", "api") //TODO include hostname if there are multiple instances of this application
+    props.put("group.id", groupId) //TODO include hostname if there are multiple instances of this application
     props.put("auto.offset.reset", "smallest")
     props.put("dual.commit.enabled", "false")
     props.put("offsets.storage", "kafka")
@@ -23,7 +23,17 @@ trait ReplicateIntoRocksDb extends KafkaConfig {
     val valueDecoder = new KafkaAvroDecoder(vProps)
 
     val consumerConnector = Consumer.create(new ConsumerConfig(props))
-    val streams = consumerConnector.createMessageStreams(Map(usersTopic -> 1, tweetsTopic -> 1), keyDecoder, valueDecoder)
+    sys.addShutdownHook {
+      consumerConnector.shutdown()
+    }
+    consumerConnector.createMessageStreams(Map(usersTopic -> 1, tweetsTopic -> 1), keyDecoder, valueDecoder).toMap
+  }
+}
+
+trait ReplicateIntoRocksDb extends KafkaConsumer {
+
+  def startRocksDbReplication(): Unit = {
+    val streams = getStreams("api-rocksdb")
 
     val usersStream = streams(usersTopic)(0)
     val usersHandler = new ReplicateDatabaseRowsIntoRocksDb(RocksDbFactory.usersRocksDb)
@@ -33,10 +43,6 @@ trait ReplicateIntoRocksDb extends KafkaConfig {
     val tweetsStream = streams(tweetsTopic)(0)
     val tweetsConsumer = new DatabaseChangeConsumer(tweetsTopic, tweetsStream, RecentTweetsHandler)(TweetKafkaAvroSerde)
     new Thread(tweetsConsumer).start()
-
-    sys.addShutdownHook {
-      consumerConnector.shutdown()
-    }
   }
 }
 

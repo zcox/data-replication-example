@@ -15,10 +15,12 @@ libraryDependencies ++= {
     "com.typesafe" % "config" % "1.3.0",
     "com.typesafe.akka" %% "akka-http-experimental" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpVersion,
+    "com.typesafe.akka" %% "akka-slf4j" % "2.3.12",
     "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
     "joda-time" % "joda-time" % "2.9.1",
     "org.joda" % "joda-convert" % "1.8.1",
     "org.rocksdb" % "rocksdbjni" % "4.0",
+    "org.elasticsearch" % "elasticsearch" % "2.1.0",
     "io.confluent" % "kafka-avro-serializer" % "1.0.1" exclude("log4j", "log4j") exclude("org.slf4j", "slf4j-log4j12"),
     "org.apache.kafka" %% "kafka" % "0.8.2.0-cp" exclude("log4j", "log4j") exclude("org.slf4j", "slf4j-log4j12"), //why is there no 0.8.2.1-cp?
     "org.scala-lang.modules" %% "scala-pickling" % "0.10.1",
