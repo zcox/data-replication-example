@@ -3,7 +3,7 @@ package com.banno
 import java.sql._
 import scala.languageFeature.reflectiveCalls
 
-trait Database extends DatabaseConfig {
+trait DatabaseOps extends DatabaseConfig {
   Class.forName("org.postgresql.Driver") //load driver
 
   def newConnection(): Connection = DriverManager.getConnection(databaseUrl, databaseUsername, databasePassword)

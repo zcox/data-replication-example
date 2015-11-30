@@ -4,7 +4,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global //TODO DB operations should be performed on their own ExecutionContext
 import org.joda.time.DateTime
 
-trait TweetRepository extends Database {
+trait TweetRepository extends DatabaseOps {
 
   def getTweet(tweetId: Long): Future[Tweet] = getTweetFromDatabase(tweetId)
 

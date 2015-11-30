@@ -23,7 +23,6 @@ class TypedRocksDB[K, V](db: RocksDB, timerName: String)(implicit serde: RocksDb
 object RocksDbFactory extends Config {
   lazy val rocksdbBlockSize = config.getLong("api.rocksdb.block-size")
   lazy val rocksdbBlockCacheSize = config.getLong("api.rocksdb.block-cache-size")
-  lazy val usersRocksDbPath = config.getString("api.rocksdb.users-db-path")
 
   def rocksDbFor[K, V](dbPath: String)(implicit serde: RocksDbSerde[K, V]): TypedRocksDB[K, V] = {
     //TODO mkdir if needed
@@ -53,6 +52,4 @@ object RocksDbFactory extends Config {
     val i = dbPath.lastIndexOf('/')
     if (i >= 0) dbPath.substring(i) else dbPath
   }
-
-  lazy val usersRocksDb = rocksDbFor(usersRocksDbPath)(UserRocksDbSerde)
 }

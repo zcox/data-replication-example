@@ -5,7 +5,6 @@ import io.confluent.kafka.serializers.KafkaAvroDecoder
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector, KafkaStream}
 import kafka.utils.VerifiableProperties
 import org.apache.avro.generic.GenericRecord
-import org.rocksdb.{RocksDB, Options, BlockBasedTableConfig, CompressionType, CompactionStyle}
 
 trait KafkaConsumer extends KafkaConfig {
   
@@ -30,30 +29,9 @@ trait KafkaConsumer extends KafkaConfig {
   }
 }
 
-trait ReplicateIntoRocksDb extends KafkaConsumer {
-
-  def startRocksDbReplication(): Unit = {
-    val streams = getStreams("api-rocksdb")
-
-    val usersStream = streams(usersTopic)(0)
-    val usersHandler = new ReplicateDatabaseRowsIntoRocksDb(RocksDbFactory.usersRocksDb)
-    val usersConsumer = new DatabaseChangeConsumer(usersTopic, usersStream, usersHandler)(UserKafkaAvroSerde)
-    new Thread(usersConsumer).start()
-
-    val tweetsStream = streams(tweetsTopic)(0)
-    val tweetsConsumer = new DatabaseChangeConsumer(tweetsTopic, tweetsStream, RecentTweetsHandler)(TweetKafkaAvroSerde)
-    new Thread(tweetsConsumer).start()
-  }
-}
-
 trait DatabaseChangeHandler[K, V] {
   def rowChanged(key: K, value: V): Unit
   def rowDeleted(key: K): Unit
-}
-
-class ReplicateDatabaseRowsIntoRocksDb[K, V](db: TypedRocksDB[K, V]) extends DatabaseChangeHandler[K, V] {
-  override def rowChanged(key: K, value: V): Unit = db.put(key, value)
-  override def rowDeleted(key: K): Unit = db.remove(key)
 }
 
 class DatabaseChangeConsumer[K, V]
