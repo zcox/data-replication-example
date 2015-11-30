@@ -6,7 +6,7 @@ import org.apache.avro.generic.GenericData
 
 trait UserRepository extends Database with KafkaAvroSerdes with Instrumented
 {
-  def getUser(userId: Long): Future[User] = getUserFromRocksDb(userId)
+  def getUser(userId: Long): Future[UserResponse] = getUserFromRocksDb(userId)
 
   def getUserFromDatabase(userId: Long): Future[User] = Future {
     query(s"SELECT * FROM users WHERE id=$userId") { results => 
@@ -16,11 +16,16 @@ trait UserRepository extends Database with KafkaAvroSerdes with Instrumented
   }
 
   lazy val usersDb = RocksDbFactory.usersRocksDb
+  lazy val recentTweetsDb = RecentTweets.rocksDb
   lazy val timer = metrics.timer(s"rocksdb-reads-$usersTopic")
 
-  def getUserFromRocksDb(userId: Long): Future[User] = Future {
+  def getUserFromRocksDb(userId: Long): Future[UserResponse] = Future {
     timer.time {
-      usersDb.get(userId).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
+      val user = usersDb.get(userId).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
+      val recentTweets = recentTweetsDb.get(userId).getOrElse(Nil)
+      val ur = UserResponse(user, recentTweets)
+      for (t <- recentTweets) println("createdAt = " + t.createdAt)
+      ur
     }
   }
 

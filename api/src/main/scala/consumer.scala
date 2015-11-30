@@ -30,6 +30,10 @@ trait ReplicateIntoRocksDb extends KafkaConfig {
     val usersConsumer = new DatabaseChangeConsumer(usersTopic, usersStream, usersHandler)(UserKafkaAvroSerde)
     new Thread(usersConsumer).start()
 
+    val tweetsStream = streams(tweetsTopic)(0)
+    val tweetsConsumer = new DatabaseChangeConsumer(tweetsTopic, tweetsStream, RecentTweetsHandler)(TweetKafkaAvroSerde)
+    new Thread(tweetsConsumer).start()
+
     sys.addShutdownHook {
       consumerConnector.shutdown()
     }

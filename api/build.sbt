@@ -31,3 +31,5 @@ libraryDependencies ++= {
 }
 
 Revolver.settings
+
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")

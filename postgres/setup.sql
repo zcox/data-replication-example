@@ -16,7 +16,7 @@ CREATE TABLE tweets (
   created_at timestamp,
   latitude double precision,
   longitude double precision,
-  user_id integer not null
+  user_id bigint not null
 );
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO example;

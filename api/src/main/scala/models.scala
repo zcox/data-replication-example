@@ -2,7 +2,7 @@ package com.banno
 
 import spray.json._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.ISODateTimeFormat
 
 final case class User(
@@ -20,13 +20,19 @@ final case class NewUser(
   description: String,
   imageUrl: String)
 
+final case class UserResponse(
+  user: User,
+  recentTweets: Seq[Tweet])
+
 final case class Tweet(
   id: Long,
   text: String,
   userId: Long,
   createdAt: DateTime,
   latitude: Option[Double],
-  longitude: Option[Double])
+  longitude: Option[Double]) {
+  def withUtc = this.copy(createdAt = createdAt.withZone(DateTimeZone.UTC))
+}
 
 final case class NewTweet(
   text: String,
@@ -49,4 +55,5 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val newUserFormat = jsonFormat4(NewUser)
   implicit val tweetFormat = jsonFormat6(Tweet)
   implicit val newTweetFormat = jsonFormat4(NewTweet)
+  implicit val userResponseFormat = jsonFormat2(UserResponse)
 }
