@@ -27,23 +27,35 @@ object TwitterStreamingMain
   stream.addListener(this)
   stream.sample()
 
+  def clean(s: String): String = 
+    if (s == null) ""
+    else s.trim
+
   def toUser(status: Status): User = User(
     status.getUser.getId,
-    status.getUser.getScreenName,
-    status.getUser.getName,
-    status.getUser.getDescription,
-    status.getUser.getOriginalProfileImageURL)
+    clean(status.getUser.getScreenName),
+    clean(status.getUser.getName),
+    clean(status.getUser.getDescription),
+    clean(status.getUser.getOriginalProfileImageURL))
 
   def toTweet(status: Status): Tweet = Tweet(
     status.getId,
-    status.getText,
+    clean(status.getText),
     status.getUser.getId,
     new DateTime(status.getCreatedAt),
     Option(status.getGeoLocation).map(_.getLatitude),
     Option(status.getGeoLocation).map(_.getLongitude))
 
   def valid(user: User, tweet: Tweet): Boolean = 
-    user.id > 0 && user.username != null && user.username.trim.length > 0 && tweet.id > 0 && tweet.userId > 0
+    user.id > 0 && 
+    user.username != null && 
+    user.username.trim.length > 0 && 
+    user.username.length < 100 &&
+    tweet.id > 0 && 
+    tweet.userId > 0 && 
+    tweet.text != null && 
+    tweet.text.trim.length > 0 && 
+    tweet.text.length < 500
 
   override def onStatus(status: Status): Unit = {
     import scala.concurrent.ExecutionContext.Implicits.global

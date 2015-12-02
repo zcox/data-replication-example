@@ -17,5 +17,5 @@ trait TweetRepository {
     db.run((Tweets returning Tweets.map(_.id) into ((tweet,id) => tweet.copy(id=id))) += tweetToRow(tweet)) map rowToTweet
 
   def createTweet(tweet: Tweet): Future[Tweet] = 
-    db.run((Tweets returning Tweets.map(_.id) into ((tweet,id) => tweet.copy(id=id))) += tweetToRow(tweet)) map rowToTweet
+    db.run(Tweets.forceInsert(tweetToRow(tweet))) map { _ => tweet }
 }

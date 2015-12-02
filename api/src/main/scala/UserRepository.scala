@@ -6,7 +6,7 @@ import org.apache.avro.generic.GenericData
 import slick.driver.PostgresDriver.api._
 import org.postgresql.util.PSQLException
 
-trait UserRepository {
+trait UserRepository extends Logging {
   import SlickDatabase._
   import Tables._
 
@@ -20,14 +20,19 @@ trait UserRepository {
   def createUser(user: NewUser): Future[User] = 
     db.run((Users returning Users.map(_.id) into ((user,id) => user.copy(id=id))) += userToRow(user)) map rowToUser
 
+  def createUser(user: User): Future[User] = 
+    db.run(Users.forceInsert(userToRow(user))) map { _ => user }
+
   def updateUser(user: User): Future[User] = {
     val q = for (u <- Users if u.id === user.id) yield u
     db.run(q.update(userToRow(user))) map { _ => user }
   }
 
   def createOrUpdateUser(user: User): Future[User] = 
-    createUser(user.toNewUser) recoverWith { //Slick's insertOrUpdate doesn't use the specified primary key on insert https://groups.google.com/d/msg/scalaquery/3geiy_lH3SM/ntAbDp8cCAAJ
-      case e: PSQLException if e.getMessage contains "duplicate key value violates unique constraint" => updateUser(user)
+    createUser(user) recoverWith { //Slick's insertOrUpdate doesn't use the specified primary key on insert https://groups.google.com/d/msg/scalaquery/3geiy_lH3SM/ntAbDp8cCAAJ
+      case e: PSQLException if e.getMessage contains "duplicate key value violates unique constraint" => 
+        // log.debug(s"Insert for user failed, updating instead: $user")
+        updateUser(user)
     }
 
   //////////////////////////////////////

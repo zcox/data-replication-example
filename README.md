@@ -9,7 +9,7 @@ Simple example that stores users and tweets in [Postgres](http://www.postgresql.
 Run all data stores & services (e.g. Postgres, Bottled Water, Zookeeper, Kafka, Elasticsearch):
 
 ```
-docker-compose up -d
+./docker-run.sh
 ```
 
 Run REST API service:
