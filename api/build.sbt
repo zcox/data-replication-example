@@ -9,7 +9,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaHttpVersion = "2.0-M1"
+  val akkaHttpVersion = "2.0-M2"
   val metricsVersion = "3.1.2"
   Seq(
     "com.typesafe" % "config" % "1.3.0",
@@ -17,6 +17,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-slf4j" % "2.3.12",
     "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
+    "com.typesafe.slick" %% "slick" % "3.1.0",
+    "com.typesafe.slick" %% "slick-codegen" % "3.1.0",
     "joda-time" % "joda-time" % "2.9.1",
     "org.joda" % "joda-convert" % "1.8.1",
     "org.rocksdb" % "rocksdbjni" % "4.0",
@@ -28,10 +30,11 @@ libraryDependencies ++= {
     "io.dropwizard.metrics" % "metrics-graphite" % metricsVersion,
     "nl.grons" %% "metrics-scala" % "3.5.2",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
-    "org.slf4j" % "log4j-over-slf4j" % "1.7.13"
+    "org.slf4j" % "log4j-over-slf4j" % "1.7.13",
+    "org.twitter4j" % "twitter4j-stream" % "4.0.4"
   )
 }
 
 Revolver.settings
 
-scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature")

@@ -1,0 +1,14 @@
+#create user
+curl -XPOST -H 'Content-Type: application/json' localhost:8181/api/users -d '{"username":"foo1", "name":"Foo", "description":"I like foo", "imageUrl":""}'
+
+#update user
+curl -XPUT -H 'Content-Type: application/json' localhost:8181/api/users/1 -d '{"id":7, "username":"foo1", "name":"Foo", "description":"I really like foo", "imageUrl":""}'
+
+#get user
+curl localhost:8181/api/users/1
+
+#create tweet
+curl -XPOST -H 'Content-Type: application/json' localhost:8181/api/tweets -d '{"text":"Scala is great", "userId":1}'
+
+#get tweet
+curl localhost:8181/api/tweets/1

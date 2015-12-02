@@ -13,6 +13,8 @@
   <logger name="kafka" level="INFO"/>
   <logger name="org.elasticsearch" level="INFO"/>
   <logger name="akka" level="INFO"/>
+  <logger name="twitter4j" level="INFO"/>
+  <logger name="slick" level="INFO"/>
 
   <root level="DEBUG">
     <appender-ref ref="stdout"/>

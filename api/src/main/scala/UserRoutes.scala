@@ -4,28 +4,21 @@ import akka.http.scaladsl.server.Directives._
 
 trait UserRoutes extends UserRepository with JsonSupport {
 
-  val userRoute = path(LongNumber) { userId => 
-    get { 
-      complete { 
-        getUser(userId) 
-      } 
-    } ~ 
-    put { 
-      entity(as[User]) { user => 
+  val usersRoute = pathPrefix("users") {
+    path(LongNumber) { userId => 
+      get { 
         complete { 
-          updateUser(user) 
+          getUser(userId) 
         } 
       } ~ 
-      entity(as[NewUser]) { user => 
-        complete {
-          createUser(userId, user)
+      put { 
+        entity(as[User]) { user => 
+          complete { 
+            updateUser(user) 
+          } 
         }
       }
-    }
-  }
-
-  val usersRoute = pathPrefix("users") {
-    userRoute ~ 
+    } ~ 
     get { 
       complete { 
         "TODO return some information about all users"
