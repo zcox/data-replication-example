@@ -40,6 +40,11 @@ final case class NewTweet(
   latitude: Option[Double],
   longitude: Option[Double])
 
+case class SearchResults(
+  query: String,
+  users: Seq[User], 
+  tweets: Seq[Tweet])
+
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit object DateTimeFormat extends JsonFormat[DateTime] {
@@ -56,4 +61,5 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val tweetFormat = jsonFormat6(Tweet)
   implicit val newTweetFormat = jsonFormat4(NewTweet)
   implicit val userResponseFormat = jsonFormat2(UserResponse)
+  implicit val searchResultsFormat = jsonFormat3(SearchResults)
 }

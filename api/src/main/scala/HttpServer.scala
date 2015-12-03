@@ -6,11 +6,12 @@ import akka.http.scaladsl.server.Directives._
 trait HttpServer
     extends UserRoutes 
     with TweetRoutes
+    with SearchRoutes
     with ActorModule
     with ApiConfig 
     with Logging {
 
-  val apiRoute = pathPrefix("api") { usersRoute ~ tweetsRoute }
+  val apiRoute = pathPrefix("api") { usersRoute ~ tweetsRoute ~ searchRoute }
 
   val pingRoute = path("ping") { get { complete { "pong" } } }
 

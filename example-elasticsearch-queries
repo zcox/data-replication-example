@@ -1,5 +1,39 @@
 curl '192.168.59.103:9200/twitter/_search?q=cats&pretty'
 
+➜  data-replication-example git:(master) ✗ curl '192.168.59.103:9200/twitter/_search?q=think&pretty'
+{
+  "took" : 6,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 3,
+    "max_score" : 1.5037115,
+    "hits" : [ {
+      "_index" : "twitter",
+      "_type" : "users",
+      "_id" : "2585335805",
+      "_score" : 1.5037115,
+      "_source":{"name":"Mini_g","username":"MinHuei_GH","description":"Think what you want to think... But I'm going to be myself!!!!!! Go ahead and judge!~~","id":2585335805,"imageUrl":""}
+    }, {
+      "_index" : "twitter",
+      "_type" : "tweets",
+      "_id" : "672163900201267203",
+      "_score" : 0.8970356,
+      "_source":{"id":672163900201267203,"text":"@Millxr @EwanMCFC I'd like to think this is just a run of form but it isn't :(","userId":609485521,"createdAt":"2015-12-02T21:22:16.000Z"}
+    }, {
+      "_index" : "twitter",
+      "_type" : "users",
+      "_id" : "3065726745",
+      "_score" : 0.7475296,
+      "_source":{"name":"MRS.ROSSI||20:05","username":"_LoveYouTommo_","description":"@Louis_Tomlinson you are the first person that I think when I wish something I LOVE YOU TO THE MOON AND BACK❤️⚓️ I'VE GOT SAUL NANNI follow","id":3065726745,"imageUrl":""}
+    } ]
+  }
+}
+
 curl '192.168.59.103:9200/twitter/_search?pretty=true' -d '
 {
   "query": {

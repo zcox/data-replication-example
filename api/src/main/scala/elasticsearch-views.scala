@@ -30,7 +30,8 @@ class ReplicateDatabaseRowsIntoElasticsearch[K, V : JsonFormat](
   with ElasticsearchUtils 
   with JsonSupport 
   with ActorModule
-  with Logging {
+  with Logging 
+  with Config {
 
   import ElasticsearchBulkActor._
   import actorSystem.dispatcher

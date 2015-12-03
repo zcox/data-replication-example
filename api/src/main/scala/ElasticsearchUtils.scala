@@ -7,7 +7,7 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 import java.net.InetAddress
 import scala.sys.addShutdownHook
 
-trait ElasticsearchUtils extends Config {
+object ElasticsearchUtils extends Config {
   lazy val elasticsearchHost = config.getString("api.elasticsearch.host")
   lazy val elasticsearchTransportPort = config.getInt("api.elasticsearch.transport-port")
   lazy val elasticsearchClusterName = config.getString("api.elasticsearch.cluster-name")
@@ -23,4 +23,8 @@ trait ElasticsearchUtils extends Config {
 
     client
   }
+}
+
+trait ElasticsearchUtils {
+  lazy val elasticsearchClient = ElasticsearchUtils.elasticsearchClient
 }
