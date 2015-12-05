@@ -11,7 +11,7 @@ trait HttpServer
     with ApiConfig 
     with Logging {
 
-  val apiRoute = pathPrefix("api") { usersRoute ~ tweetsRoute ~ searchRoute }
+  val apiRoute = pathPrefix("api") { rejectEmptyResponse { usersRoute ~ tweetsRoute ~ searchRoute } }
 
   val pingRoute = path("ping") { get { complete { "pong" } } }
 

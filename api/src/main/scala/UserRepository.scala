@@ -10,12 +10,12 @@ trait UserRepository extends Logging {
   import SlickDatabase._
   import Tables._
 
-  def getUser(userId: Long): Future[UserResponse] = 
+  def getUser(userId: Long): Future[Option[UserResponse]] = 
     // getUserFromDatabase(userId)
     getUserFromRocksDb(userId)
 
-  def getUserFromDatabase(userId: Long): Future[UserResponse] = 
-    db.run(Users.filter(_.id === userId).result.head) map rowToUser map { u => UserResponse(u, Nil) }
+  def getUserFromDatabase(userId: Long): Future[Option[UserResponse]] = 
+    db.run(Users.filter(_.id === userId).result.headOption).map(_.map(rowToUser).map(u => UserResponse(u, Nil)))
 
   def createUser(user: NewUser): Future[User] = 
     db.run((Users returning Users.map(_.id) into ((user,id) => user.copy(id=id))) += userToRow(user)) map rowToUser
@@ -40,9 +40,10 @@ trait UserRepository extends Logging {
   lazy val usersDb = UsersRocksDb.rocksDb
   lazy val recentTweetsDb = RecentTweets.rocksDb
 
-  def getUserFromRocksDb(userId: Long): Future[UserResponse] = Future {
-    val user = usersDb.get(userId).getOrElse(throw new NullPointerException("No user in RocksDB for $userId"))
-    val recentTweets = recentTweetsDb.get(userId).getOrElse(Nil)
-    UserResponse(user, recentTweets)
+  def getUserFromRocksDb(userId: Long): Future[Option[UserResponse]] = Future {
+    usersDb.get(userId) map { user => 
+      val recentTweets = recentTweetsDb.get(userId).getOrElse(Nil)
+      UserResponse(user, recentTweets)
+    }
   }
 }

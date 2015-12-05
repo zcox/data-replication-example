@@ -6,10 +6,10 @@ trait UserRoutes extends UserRepository with JsonSupport {
 
   val usersRoute = pathPrefix("users") {
     path(LongNumber) { userId => 
-      get { 
+      get {
         complete { 
           getUser(userId) 
-        } 
+        }
       } ~ 
       put { 
         entity(as[User]) { user => 
