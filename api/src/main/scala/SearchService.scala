@@ -19,7 +19,7 @@ trait SearchService extends ElasticsearchUtils {
   def toUser(hit: SearchHit): User = {
     val source = hit.getSource.toMap
     User(
-      id = source("id").asInstanceOf[Long],
+      id = source("id").asInstanceOf[Number].longValue,
       username = source("username").toString,
       name = source.get("name").map(_.toString).getOrElse(""),
       description = source.get("description").map(_.toString).getOrElse(""),
@@ -29,7 +29,7 @@ trait SearchService extends ElasticsearchUtils {
   def toTweet(hit: SearchHit): Tweet = {
     val source = hit.getSource.toMap
     Tweet(
-      id = source("id").asInstanceOf[Long],
+      id = source("id").asInstanceOf[Number].longValue,
       text = source.get("text").map(_.toString).getOrElse(""),
       userId = (source.get("userId").map(_.asInstanceOf[Number].longValue).getOrElse(0)),
       createdAt = source.get("createdAt").map(s => format.parseDateTime(s.toString)).getOrElse(null),
