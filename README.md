@@ -30,4 +30,26 @@ sbt run
 
 Note that when creating users and tweets from the Twitter Streaming API, Bottled Water will probably eventually crash. This is [caused by a known bug](https://github.com/confluentinc/bottledwater-pg/issues/32) and will hopefully get fixed.
 
+## Use the Things
+
+```
+#create user
+curl -XPOST -H 'Content-Type: application/json' localhost:8181/api/users -d '{"username":"foo1", "name":"Foo", "description":"I like foo", "imageUrl":""}'
+
+#update user
+curl -XPUT -H 'Content-Type: application/json' localhost:8181/api/users/1 -d '{"id":1, "username":"foo1", "name":"Foo", "description":"I really like foo", "imageUrl":""}'
+
+#get user
+curl localhost:8181/api/users/1
+
+#create tweet
+curl -XPOST -H 'Content-Type: application/json' localhost:8181/api/tweets -d '{"text":"Scala is great", "userId":1}'
+
+#get tweet
+curl localhost:8181/api/tweets/1
+
+#search
+curl 'localhost:8181/api/search?q=like'
+```
+
 [![Stories in Ready](https://badge.waffle.io/zcox/data-replication-example.png?label=ready&title=Ready)](https://waffle.io/zcox/data-replication-example)
