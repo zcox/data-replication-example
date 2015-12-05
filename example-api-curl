@@ -12,3 +12,6 @@ curl -XPOST -H 'Content-Type: application/json' localhost:8181/api/tweets -d '{"
 
 #get tweet
 curl localhost:8181/api/tweets/1
+
+#search
+curl 'localhost:8181/api/search?q=like'
