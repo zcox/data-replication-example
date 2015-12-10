@@ -1,7 +1,5 @@
 CREATE USER example WITH PASSWORD 'example';
 
-create extension bottledwater;
-
 CREATE TABLE users (
   id bigserial primary key,
   username varchar(50) unique not null,

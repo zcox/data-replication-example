@@ -33,12 +33,12 @@ postgres:
   ports:
     - "5432:5432"
 
-bottledwater:
-  image: confluent/bottledwater:0.1
-  links:
-    - postgres
-    - kafka
-    - schemaregistry:schema-registry
+# bottledwater:
+#   image: confluent/bottledwater:0.1
+#   links:
+#     - postgres
+#     - kafka
+#     - schemaregistry:schema-registry
 
 elasticsearch:
   image: elasticsearch:2.1.0
