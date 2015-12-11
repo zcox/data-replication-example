@@ -16,6 +16,7 @@ Run REST API service:
 
 ```
 cd api
+mkdir rocksdb
 sbt run
 # choose: [1] com.banno.Main
 ```
