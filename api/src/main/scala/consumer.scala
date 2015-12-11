@@ -42,10 +42,16 @@ class DatabaseChangeConsumer[K, V]
   override def run(): Unit = {
     log.debug(s"Consuming from $topic...")
     stream foreach { messageAndMetadata => 
-      val key = serde.keyFromRecord(messageAndMetadata.key.asInstanceOf[GenericRecord])
+      val rawKey = messageAndMetadata.key
       val message = messageAndMetadata.message
-      if (message == null) handler.rowDeleted(key)
-      else handler.rowChanged(key, serde.valueFromRecord(message.asInstanceOf[GenericRecord]))
+      if (rawKey != null && message == null) 
+        handler.rowDeleted(serde.keyFromRecord(rawKey.asInstanceOf[GenericRecord]))
+      else {
+        val messageRecord = message.asInstanceOf[GenericRecord]
+        val value = serde.valueFromRecord(messageRecord)
+        val key = if (rawKey == null) serde.keyFromValue(value) else serde.keyFromRecord(rawKey.asInstanceOf[GenericRecord])
+        handler.rowChanged(key, value)
+      }
     }
     log.debug(s"Done consuming from $topic")
   }

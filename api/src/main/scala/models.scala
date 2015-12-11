@@ -10,8 +10,12 @@ final case class User(
   username: String,
   name: String,
   description: String,
-  imageUrl: String) {
+  imageUrl: String,
+  createdAt: DateTime = new DateTime,
+  updatedAt: DateTime = new DateTime) {
   def toNewUser = NewUser(username, name, description, imageUrl)
+  def updatedNow = this.copy(updatedAt = new DateTime)
+  def withUtc = this.copy(createdAt = createdAt.withZone(DateTimeZone.UTC), updatedAt = updatedAt.withZone(DateTimeZone.UTC))
 }
 
 final case class NewUser(
@@ -28,10 +32,11 @@ final case class Tweet(
   id: Long,
   text: String,
   userId: Long,
-  createdAt: DateTime,
   latitude: Option[Double],
-  longitude: Option[Double]) {
-  def withUtc = this.copy(createdAt = createdAt.withZone(DateTimeZone.UTC))
+  longitude: Option[Double],
+  createdAt: DateTime = new DateTime,
+  updatedAt: DateTime = new DateTime) {
+  def withUtc = this.copy(createdAt = createdAt.withZone(DateTimeZone.UTC), updatedAt = updatedAt.withZone(DateTimeZone.UTC))
 }
 
 final case class NewTweet(
@@ -56,9 +61,9 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     }
   }
 
-  implicit val userFormat = jsonFormat5(User)
+  implicit val userFormat = jsonFormat7(User)
   implicit val newUserFormat = jsonFormat4(NewUser)
-  implicit val tweetFormat = jsonFormat6(Tweet)
+  implicit val tweetFormat = jsonFormat7(Tweet)
   implicit val newTweetFormat = jsonFormat4(NewTweet)
   implicit val userResponseFormat = jsonFormat2(UserResponse)
   implicit val searchResultsFormat = jsonFormat3(SearchResults)

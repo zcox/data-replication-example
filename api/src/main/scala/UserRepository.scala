@@ -25,7 +25,7 @@ trait UserRepository extends Logging {
 
   def updateUser(user: User): Future[User] = {
     val q = for (u <- Users if u.id === user.id) yield u
-    db.run(q.update(userToRow(user))) map { _ => user }
+    db.run(q.update(userToRow(user.updatedNow))) map { _ => user }
   }
 
   def createOrUpdateUser(user: User): Future[User] = 

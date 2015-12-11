@@ -42,10 +42,11 @@ object TwitterStreamingMain
     status.getId,
     clean(status.getText),
     status.getUser.getId,
-    new DateTime(status.getCreatedAt),
     Option(status.getGeoLocation).map(_.getLatitude),
     Option(status.getGeoLocation).map(_.getLongitude))
 
+  //this was originally an attempt at a workaround for https://github.com/confluentinc/bottledwater-pg/issues/32
+  //invalid user/tweet data does not cause ^^, but this is still probably good to keep in here, as a sanity check on obviously bad data
   def valid(user: User, tweet: Tweet): Boolean = 
     user.id > 0 && 
     user.username != null && 

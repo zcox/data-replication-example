@@ -52,4 +52,12 @@ curl localhost:8181/api/tweets/1
 curl 'localhost:8181/api/search?q=like'
 ```
 
+## Slick Code Generation
+
+```
+cd api
+sbt console
+slick.codegen.SourceCodeGenerator.main(Array("slick.driver.PostgresDriver", "org.postgresql.Driver", "jdbc:postgresql://192.168.59.103:5432/postgres", "./slick", "com.banno", "example", "example"))
+```
+
 [![Stories in Ready](https://badge.waffle.io/zcox/data-replication-example.png?label=ready&title=Ready)](https://waffle.io/zcox/data-replication-example)

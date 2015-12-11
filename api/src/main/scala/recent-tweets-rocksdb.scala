@@ -13,17 +13,7 @@ object RecentTweets extends Config {
   lazy val rocksDb = RocksDbFactory.rocksDbFor(rocksDbPath)(RecentTweetsRocksDbSerde)
 }
 
-object TweetKafkaAvroSerde extends KafkaAvroSerde[Long, Tweet] {
-  override def keyFromRecord(record: GenericRecord): Long = record.get("id").asInstanceOf[Long]
-  override def valueFromRecord(record: GenericRecord): Tweet = 
-    Tweet(
-      record.get("id").asInstanceOf[Long],
-      record.get("content").toString,
-      record.get("user_id").asInstanceOf[Long],
-      toDateTime(record.get("created_at").asInstanceOf[GenericRecord]),
-      Option(record.get("latitude")).map(_.asInstanceOf[Double]),
-      Option(record.get("longitude")).map(_.asInstanceOf[Double]))
-
+trait AvroUtils {
   //class = org.apache.avro.generic.GenericData$Record, toString = {"year": 2015, "month": 11, "day": 29, "hour": 20, "minute": 5, "second": 4, "micro": 812000}
   def toDateTime(record: GenericRecord): DateTime = new DateTime(
     record.get("year").asInstanceOf[Int],
@@ -33,6 +23,20 @@ object TweetKafkaAvroSerde extends KafkaAvroSerde[Long, Tweet] {
     record.get("minute").asInstanceOf[Int],
     record.get("second").asInstanceOf[Int],
     record.get("micro").asInstanceOf[Int] / 1000).withZone(DateTimeZone.UTC)
+}
+
+object TweetKafkaAvroSerde extends KafkaAvroSerde[Long, Tweet] with AvroUtils {
+  override def keyFromRecord(record: GenericRecord): Long = record.get("id").asInstanceOf[Long]
+  override def valueFromRecord(record: GenericRecord): Tweet = 
+    Tweet(
+      record.get("id").asInstanceOf[Long],
+      record.get("content").toString,
+      record.get("user_id").asInstanceOf[Long],
+      Option(record.get("latitude")).map(_.asInstanceOf[Double]),
+      Option(record.get("longitude")).map(_.asInstanceOf[Double]),
+      new DateTime(record.get("created_at").asInstanceOf[Long]),
+      new DateTime(record.get("updated_at").asInstanceOf[Long]))
+  override def keyFromValue(tweet: Tweet): Long = tweet.id
 }
 
 object RecentTweetsRocksDbSerde extends RocksDbSerde[Long, List[Tweet]] {

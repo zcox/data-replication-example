@@ -16,7 +16,7 @@ trait ReplicateIntoRocksDb extends KafkaConsumer {
   }
 }
 
-class ReplicateDatabaseRowsIntoRocksDb[K, V](db: TypedRocksDB[K, V]) extends DatabaseChangeHandler[K, V] {
+class ReplicateDatabaseRowsIntoRocksDb[K, V](db: TypedRocksDB[K, V]) extends DatabaseChangeHandler[K, V] with Logging {
   override def rowChanged(key: K, value: V): Unit = db.put(key, value)
   override def rowDeleted(key: K): Unit = db.remove(key)
 }
